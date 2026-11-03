@@ -1,0 +1,28 @@
+replicaCount: 3
+
+image:
+  repository: dockrphage/devops-app
+  tag: "v1.0.1"
+  pullPolicy: IfNotPresent
+
+appVersion: "v1.0.1"
+
+service:
+  type: LoadBalancer
+  port: 80
+
+resources:
+  requests:
+    cpu: 50m
+    memory: 64Mi
+  limits:
+    cpu: 200m
+    memory: 128Mi
+
+probes:
+  readiness:
+    initialDelaySeconds: 3
+    periodSeconds: 5
+  liveness:
+    initialDelaySeconds: 10
+    periodSeconds: 10

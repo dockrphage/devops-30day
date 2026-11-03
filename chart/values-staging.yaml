@@ -1,0 +1,10 @@
+replicaCount: 1
+image:
+  tag: "v1.0.0"
+appVersion: "v1.0.0"
+resources:
+  limits:
+    cpu: 100m
+    memory: 96Mi
+service:
+  type: ClusterIP
