@@ -1,9 +1,9 @@
 replicaCount: 3
 image:
   repository: dockrphage/devops-app
-  tag: "f35baf64530bde1717c2785ce7ebda4285c94019"
+  tag: "22db955289a061a19e8dc875d051730d84021882"
   pullPolicy: IfNotPresent
-appVersion: "f35baf64530bde1717c2785ce7ebda4285c94019"
+appVersion: "22db955289a061a19e8dc875d051730d84021882"
 service:
   type: LoadBalancer
   port: 80
