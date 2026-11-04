@@ -10,7 +10,6 @@ permissions:
   contents: write
   security-events: write
 
-
 jobs:
   build-and-push:
     runs-on: ubuntu-latest
@@ -28,14 +27,31 @@ jobs:
           username: ${{ vars.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
-      - name: Build and push
+      - name: Build image (no push yet)
         uses: docker/build-push-action@v6
         with:
           context: .
-          push: ${{ github.event_name != 'pull_request' }}
+          push: false
+          load: true
           tags: |
             ${{ vars.DOCKERHUB_USERNAME }}/devops-app:${{ github.sha }}
             ${{ vars.DOCKERHUB_USERNAME }}/devops-app:latest
+
+      - name: Run Trivy vulnerability scanner
+        uses: aquasecurity/trivy-action@0.36.0
+        with:
+          image-ref: '${{ vars.DOCKERHUB_USERNAME }}/devops-app:${{ github.sha }}'
+          format: 'table'
+          exit-code: '1'
+          ignore-unfixed: true
+          vuln-type: 'os,library'
+          severity: 'CRITICAL,HIGH'
+
+      - name: Push image (only if scan passed)
+        if: github.event_name != 'pull_request'
+        run: |
+          docker push ${{ vars.DOCKERHUB_USERNAME }}/devops-app:${{ github.sha }}
+          docker push ${{ vars.DOCKERHUB_USERNAME }}/devops-app:latest
 
       - name: Install yq
         uses: frenck/action-setup-yq@v1
@@ -57,22 +73,22 @@ jobs:
           git push
 
   hadolint:
-        name: Lint Dockerfile
-        runs-on: ubuntu-latest
-        steps:
-          - uses: actions/checkout@v4
+    name: Lint Dockerfile
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
 
-          - name: Run Hadolint
-            uses: hadolint/hadolint-action@v3.1.0
-            with:
-              dockerfile: Dockerfile
-              failure-threshold: warning
-              format: sarif
-              output-file: hadolint-results.sarif
+      - name: Run Hadolint
+        uses: hadolint/hadolint-action@v3.1.0
+        with:
+          dockerfile: Dockerfile
+          failure-threshold: warning
+          format: sarif
+          output-file: hadolint-results.sarif
 
-          - name: Upload Hadolint SARIF
-            if: always()
-            uses: github/codeql-action/upload-sarif@v3
-            with:
-              sarif_file: hadolint-results.sarif
-              category: hadolint
+      - name: Upload Hadolint SARIF
+        if: always()
+        uses: github/codeql-action/upload-sarif@v3
+        with:
+          sarif_file: hadolint-results.sarif
+          category: hadolint
