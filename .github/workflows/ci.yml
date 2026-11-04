@@ -35,7 +35,7 @@ jobs:
             ${{ vars.DOCKERHUB_USERNAME }}/devops-app:${{ github.sha }}
             ${{ vars.DOCKERHUB_USERNAME }}/devops-app:latest
 
-            - name: Install yq
+      - name: Install yq
         uses: frenck/action-setup-yq@v1
 
       - name: Update chart values with SHA tag
