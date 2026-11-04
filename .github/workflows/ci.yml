@@ -7,7 +7,7 @@ on:
     branches: [main]
 
 permissions:
-  contents: read
+  contents: write
 
 jobs:
   build-and-push:
@@ -34,3 +34,22 @@ jobs:
           tags: |
             ${{ vars.DOCKERHUB_USERNAME }}/devops-app:${{ github.sha }}
             ${{ vars.DOCKERHUB_USERNAME }}/devops-app:latest
+
+            - name: Install yq
+        uses: frenck/action-setup-yq@v1
+
+      - name: Update chart values with SHA tag
+        run: |
+          yq -i '.image.tag = strenv(SHA)' chart/values.yaml
+          yq -i '.appVersion = strenv(SHA)' chart/values.yaml
+        env:
+          SHA: ${{ github.sha }}
+
+      - name: Commit and push values update
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add chart/values.yaml
+          git diff --cached --quiet && echo "No changes to commit" && exit 0
+          git commit -m "ci: bump image tag to ${GITHUB_SHA::7}"
+          git push
