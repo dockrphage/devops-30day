@@ -54,7 +54,7 @@ jobs:
           git commit -m "ci: bump image tag to ${GITHUB_SHA::7}"
           git push
 
-    hadolint:
+hadolint:
         name: Lint Dockerfile
         runs-on: ubuntu-latest
         steps:
